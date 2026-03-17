@@ -2,8 +2,23 @@
 import type { Product, AIPromptTemplate, AIRecommendation } from '../../types';
 
 // Configuración de la API (puedes cambiar por OpenAI, Claude, etc.)
-const AI_API_BASE_URL = process.env.VITE_AI_API_URL || 'https://api.openai.com/v1';
 const AI_API_KEY = process.env.VITE_AI_API_KEY || '';
+
+interface ChatContext {
+  relatedProducts?: string;
+  [key: string]: unknown;
+}
+
+interface RecommendationUserProfile {
+  viewedProducts?: string[];
+  cartProducts?: string[];
+  preferredCategories?: string[];
+  priceRange?: {
+    min?: number;
+    max?: number;
+  };
+  purchaseHistory?: string[];
+}
 
 // Templates de prompts optimizados para E-Commerce
 export const PROMPT_TEMPLATES: AIPromptTemplate[] = [
@@ -123,7 +138,7 @@ class AIService {
   }
 
   // Chatbot para atención al cliente
-  async processChatMessage(message: string, context: any = {}): Promise<string> {
+  async processChatMessage(message: string, context: ChatContext = {}): Promise<string> {
     const template = PROMPT_TEMPLATES.find(t => t.id === 'chatbot_customer_service');
     if (!template) throw new Error('Chatbot template not found');
 
@@ -143,7 +158,7 @@ class AIService {
   }
 
   // Generar recomendaciones personalizadas
-  async generateRecommendations(userProfile: any, products: Product[]): Promise<AIRecommendation[]> {
+  async generateRecommendations(userProfile: RecommendationUserProfile, products: Product[]): Promise<AIRecommendation[]> {
     const template = PROMPT_TEMPLATES.find(t => t.id === 'product_recommendations');
     if (!template) throw new Error('Recommendations template not found');
 

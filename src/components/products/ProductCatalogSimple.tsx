@@ -203,6 +203,8 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [isCartModalOpen, setIsCartModalOpen] = useState<boolean>(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
 
   // Filtrar productos
   React.useEffect(() => {
@@ -351,6 +353,15 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
     setIsCartModalOpen(true);
   };
 
+  const openProductModal = (product: Product) => {
+    setSelectedProduct(product);
+    setSelectedImageIndex(0);
+  };
+
+  const closeProductModal = () => {
+    setSelectedProduct(null);
+  };
+
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
   const totalCartItems = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
@@ -476,7 +487,20 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
 
         <div className="products-grid">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="product-card">
+            <div
+              key={product.id}
+              className="product-card"
+              onClick={() => openProductModal(product)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openProductModal(product);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ver detalle de ${product.name}`}
+            >
               <div className="product-image">
                 <img src={product.images[0]} alt={product.name} />
                 {product.originalPrice && (
@@ -516,7 +540,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
                 <div className="product-actions">
                   <button 
                     className="ai-description-btn"
-                    onClick={() => generateAIDescription(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void generateAIDescription(product.id);
+                    }}
                     disabled={isGeneratingDescription === product.id}
                   >
                     {isGeneratingDescription === product.id ? 
@@ -527,7 +554,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
                   
                   <button 
                     className="add-to-cart-btn"
-                    onClick={() => addToCart(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void addToCart(product.id);
+                    }}
                     disabled={addingToCart === product.id || product.stock === 0}
                     data-state={
                       product.stock === 0 ? 'out-of-stock' :
@@ -566,6 +596,74 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
           </div>
         )}
       </div>
+
+      {/* Modal de detalle del producto */}
+      {selectedProduct && (
+        <div className="product-detail-overlay" onClick={closeProductModal}>
+          <div className="product-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="product-detail-close"
+              onClick={closeProductModal}
+              aria-label="Cerrar detalle"
+            >
+              ✕
+            </button>
+
+            <div className="product-detail-media">
+              <div className="product-detail-main-image-wrap">
+                <img
+                  src={selectedProduct.images[selectedImageIndex] || selectedProduct.images[0]}
+                  alt={selectedProduct.name}
+                  className="product-detail-main-image"
+                />
+              </div>
+
+              {selectedProduct.images.length > 1 && (
+                <div className="product-detail-thumbs">
+                  {selectedProduct.images.map((image, index) => (
+                    <button
+                      key={index}
+                      className={`product-detail-thumb ${selectedImageIndex === index ? 'active' : ''}`}
+                      onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Ver imagen ${index + 1}`}
+                    >
+                      <img src={image} alt={`${selectedProduct.name} ${index + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="product-detail-info">
+              <h3>{selectedProduct.name}</h3>
+              <p className="product-detail-description">{selectedProduct.description}</p>
+
+              <div className="product-detail-pricing">
+                <span className="current-price">${selectedProduct.price}</span>
+                {selectedProduct.originalPrice && (
+                  <span className="original-price">${selectedProduct.originalPrice}</span>
+                )}
+              </div>
+
+              <div className="product-detail-meta">
+                <div>⭐ {selectedProduct.rating} ({selectedProduct.reviews.length} reseñas)</div>
+                <div>📦 Stock: {selectedProduct.stock}</div>
+                <div>🗂️ Categoría: {selectedProduct.category}</div>
+                {selectedProduct.subcategory && <div>🔖 Subcategoría: {selectedProduct.subcategory}</div>}
+              </div>
+
+              <div className="product-detail-features">
+                <h4>Características</h4>
+                <div className="product-detail-tags">
+                  {selectedProduct.tags.map((tag) => (
+                    <span key={tag} className="tag">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal del carrito */}
       <CartModal

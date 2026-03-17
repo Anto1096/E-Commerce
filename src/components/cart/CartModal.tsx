@@ -17,6 +17,10 @@ interface CartModalProps {
   onClearCart: () => void;
 }
 
+interface CompletedOrderData {
+  orderNumber: string;
+}
+
 const CartModal: React.FC<CartModalProps> = ({
   isOpen,
   onClose,
@@ -48,7 +52,7 @@ const CartModal: React.FC<CartModalProps> = ({
     setIsCheckoutOpen(true);
   };
 
-  const handleOrderComplete = (orderData: any) => {
+  const handleOrderComplete = (orderData: CompletedOrderData) => {
     console.log('Pedido completado:', orderData);
     setIsCheckoutOpen(false);
     onClearCart();

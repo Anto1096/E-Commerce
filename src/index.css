@@ -1,31 +1,116 @@
-/* Reset y estilos base para el E-Commerce */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap");
+
+:root {
+  --bg-page: #f3f7fb;
+  --bg-elevated: #ffffff;
+  --bg-soft: #edf5ff;
+  --ink-900: #0f172a;
+  --ink-700: #334155;
+  --ink-500: #64748b;
+  --line-soft: #dbe7f4;
+
+  --brand-600: #0284c7;
+  --brand-500: #0ea5e9;
+  --brand-400: #38bdf8;
+  --accent-500: #14b8a6;
+  --accent-600: #0d9488;
+
+  --danger-500: #ef4444;
+  --success-500: #10b981;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --shadow-strong: 0 24px 50px rgba(2, 132, 199, 0.2);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
 }
 
-html {
-  width: 100vw;
-  height: 100vh;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  width: 100%;
+}
+
+html,
+body {
   overflow-x: hidden;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  line-height: 1.55;
+  color: var(--ink-900);
+  background:
+    radial-gradient(
+      circle at 10% -10%,
+      rgba(56, 189, 248, 0.14) 0%,
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(20, 184, 166, 0.12) 0%,
+      transparent 28%
+    ),
+    var(--bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f9fafb;
-  overflow-x: hidden;
 }
 
-#root {
-  width: 100vw;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Sora", "Manrope", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  color: #ffffff;
+  background: var(--brand-500);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #eaf1f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--brand-400) 0%,
+    var(--brand-600) 100%
+  );
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--brand-500) 0%, #0369a1 100%);
 }

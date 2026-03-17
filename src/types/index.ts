@@ -89,7 +89,7 @@ export interface ChatMessage {
   aiMetadata?: {
     confidence: number;
     intent?: string;
-    entities?: Record<string, any>;
+    entities?: Record<string, unknown>;
   };
 }
 

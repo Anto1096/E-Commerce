@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { aiService } from '../../services/ai/aiService';
 import type { Product, AIRecommendation } from '../../types';
 import './ProductCatalog.css';
@@ -60,12 +60,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 2000 });
 
-  useEffect(() => {
-    filterProducts();
-    generateRecommendations();
-  }, [searchQuery, selectedCategory, priceRange, products]);
-
-  const filterProducts = () => {
+  const filterProducts = useCallback(() => {
     let filtered = products;
 
     // Filtro por búsqueda
@@ -88,9 +83,9 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
     );
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchQuery, selectedCategory, priceRange]);
 
-  const generateRecommendations = async () => {
+  const generateRecommendations = useCallback(async () => {
     try {
       const userProfile = {
         viewedProducts: ['Smartphone', 'Laptop'],
@@ -103,7 +98,12 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery = '' }) => 
     } catch (error) {
       console.error('Error generating recommendations:', error);
     }
-  };
+  }, [products]);
+
+  useEffect(() => {
+    filterProducts();
+    void generateRecommendations();
+  }, [filterProducts, generateRecommendations]);
 
   const generateAIDescription = async (productId: string) => {
     const product = products.find(p => p.id === productId);

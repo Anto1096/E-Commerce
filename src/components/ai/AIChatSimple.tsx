@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { aiService } from '../../services/ai/aiService';
 import './ChatbotModal.css';
 
 interface AIChatProps {
@@ -24,45 +25,61 @@ const AIChat: React.FC<AIChatProps> = ({ isOpen, onClose }) => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
 
     const userMessage: SimpleMessage = {
       id: Date.now().toString(),
-      message: inputMessage,
+      message: messageText,
       isUser: true,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setIsTyping(true);
 
-    // Simular respuesta de IA
-    setTimeout(() => {
-      const responses = [
-        '¡Por supuesto! 😊 Estoy aquí para ayudarte con cualquier pregunta sobre nuestros productos tecnológicos.',
-        '🔍 Tenemos una gran variedad de productos. ¿Buscas algo específico como laptops, smartphones o accesorios?',
-        '📦 Te puedo ayudar con información sobre envíos, devoluciones, especificaciones técnicas y más.',
-        '🛠️ Si necesitas soporte técnico especializado, puedo conectarte con nuestro equipo de expertos.',
-        '✨ Nuestros productos incluyen garantía completa y soporte 24/7. ¿Te interesa algún producto en particular?',
-        '💳 También puedo ayudarte con el proceso de compra, métodos de pago y seguimiento de pedidos.',
-        '🎯 ¿Necesitas recomendaciones personalizadas? Puedo sugerirte productos según tus necesidades.',
-        '📞 Para consultas específicas, nuestro equipo está disponible las 24 horas. ¿En qué más puedo asistirte?'
-      ];
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];      const aiMessage: SimpleMessage = {
+    try {
+      const aiResponse = await aiService.processChatMessage(messageText, {
+        channel: 'chatbot_modal',
+      });
+
+      const aiMessage: SimpleMessage = {
         id: (Date.now() + 1).toString(),
-        message: randomResponse,
+        message: aiResponse,
         isUser: false,
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error en el chatbot:', error);
+
+      const fallbackMessage: SimpleMessage = {
+        id: (Date.now() + 1).toString(),
+        message:
+          'Lo siento, tuve un problema al responder. Intenta nuevamente o consulta por productos, envios y devoluciones.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, fallbackMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await sendMessage(inputMessage);
   };
 
   const quickQuestions = [
@@ -74,8 +91,8 @@ const AIChat: React.FC<AIChatProps> = ({ isOpen, onClose }) => {
     '📞 ¿Cómo contacto con soporte técnico?'
   ];
 
-  const handleQuickQuestion = (question: string) => {
-    setInputMessage(question);
+  const handleQuickQuestion = async (question: string) => {
+    await sendMessage(question);
   };
 
   if (!isOpen) return null;
@@ -94,7 +111,7 @@ const AIChat: React.FC<AIChatProps> = ({ isOpen, onClose }) => {
           <button onClick={onClose} className="chat-close-btn">✕</button>
         </div>
 
-        <div className="ai-chat-messages">
+        <div className="ai-chat-messages" ref={messagesRef}>
           {messages.map((message) => (
             <div
               key={message.id}
@@ -132,7 +149,7 @@ const AIChat: React.FC<AIChatProps> = ({ isOpen, onClose }) => {
               {quickQuestions.map((question, index) => (
                 <button
                   key={index}
-                  onClick={() => handleQuickQuestion(question)}
+                  onClick={() => void handleQuickQuestion(question)}
                   className="quick-question-btn"
                 >
                   {question}

@@ -12,7 +12,22 @@ interface CheckoutModalProps {
     image: string;
   }>;
   total: number;
-  onOrderComplete: (orderData: any) => void;
+  onOrderComplete: (orderData: {
+    orderNumber: string;
+    customer: CustomerInfo;
+    shipping: ShippingInfo;
+    payment: {
+      cardNumber: string;
+      expiryDate: string;
+      cvv: string;
+      cardholderName: string;
+      paymentMethod: 'credit' | 'debit' | 'paypal';
+    };
+    items: CheckoutModalProps['cartItems'];
+    total: number;
+    orderDate: string;
+    status: 'confirmed';
+  }) => void;
 }
 
 interface CustomerInfo {
@@ -120,7 +135,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
       items: cartItems,
       total,
       orderDate: new Date().toISOString(),
-      status: 'confirmed'
+      status: 'confirmed' as const
     };
 
     onOrderComplete(orderData);
